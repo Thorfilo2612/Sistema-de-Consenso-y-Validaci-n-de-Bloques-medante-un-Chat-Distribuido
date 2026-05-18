@@ -59,7 +59,6 @@ class ServidorChat:
     def iniciar(self) -> None:
         """Crea el socket, hace bind/listen y entra al loop de accept()."""
         self.servidor_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        # SO_REUSEADDR permite reiniciar el servidor sin esperar TIME_WAIT
         self.servidor_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 
         try:
@@ -73,7 +72,6 @@ class ServidorChat:
                     cliente_socket, direccion = self.servidor_socket.accept()
                     logging.info(f"Nueva conexion desde {direccion[0]}:{direccion[1]}")
 
-                    # Un hilo por cliente; daemon=True para que cierren con el main
                     hilo = threading.Thread(
                         target=self._manejar_cliente,
                         args=(cliente_socket, direccion),
@@ -81,7 +79,6 @@ class ServidorChat:
                     )
                     hilo.start()
                 except OSError:
-                    # Socket cerrado por detener() -> salir limpio
                     break
 
         except Exception as e:
@@ -106,18 +103,15 @@ class ServidorChat:
     # Sesión por cliente                                                  #
     # ------------------------------------------------------------------ #
     def _manejar_cliente(self, cliente_socket: socket.socket, direccion: tuple) -> None:
-        """Sesion completa de un cliente: handshake + loop de lectura."""
+        """Sesion completa de un cliente: handshake + loop de comandos."""
         nombre: str | None = None
         buffer: str = ""
 
         try:
-            # 1) Handshake obligatorio antes de aceptar cualquier comando
             nombre = self._registrar_cliente(cliente_socket, direccion)
             if not nombre:
                 return
 
-            # 2) Loop de lectura (line-delimited JSON)
-            #    Por ahora solo loguea. En el Paso 3 ruteamos comandos.
             while self.activo:
                 datos = cliente_socket.recv(4096)
                 if not datos:
@@ -127,16 +121,17 @@ class ServidorChat:
                 while '\n' in buffer:
                     linea, buffer = buffer.split('\n', 1)
                     linea = linea.strip()
-                    if linea:
-                        logging.info(f"[{nombre}] mensaje recibido: {linea}")
-                        # TODO Paso 3: parsear JSON y rutear comandos
+                    if not linea:
+                        continue
+                    seguir = self._procesar_mensaje(nombre, cliente_socket, linea)
+                    if not seguir:
+                        return  # /quit -> salida limpia (finally hace cleanup)
 
         except (ConnectionResetError, BrokenPipeError):
             logging.warning(f"Cliente {nombre or direccion} desconectado abruptamente")
         except Exception as e:
             logging.error(f"Error con cliente {nombre or direccion}: {e}")
         finally:
-            # Limpieza siempre, pase lo que pase
             if nombre:
                 with self.lock:
                     self.clientes.pop(nombre, None)
@@ -152,9 +147,9 @@ class ServidorChat:
         direccion: tuple
     ) -> str | None:
         """
-        Handshake inicial. Espera un primer mensaje JSON:
+        Handshake inicial. Espera primer mensaje JSON:
             {"cmd": "register", "from": "<nombre>"}
-        Devuelve el nombre registrado o None si el handshake falla.
+        Devuelve el nombre registrado o None si falla.
         """
         try:
             buffer = ""
@@ -207,6 +202,113 @@ class ServidorChat:
             return None
 
     # ------------------------------------------------------------------ #
+    # Ruteo de comandos                                                   #
+    # ------------------------------------------------------------------ #
+    def _procesar_mensaje(
+        self,
+        nombre: str,
+        cliente_socket: socket.socket,
+        linea: str
+    ) -> bool:
+        """
+        Parsea un JSON entrante y lo despacha al comando correspondiente.
+        Devuelve True para seguir leyendo, False si la sesion termina.
+        IMPORTANTE: ignoramos `from` del cliente y usamos `nombre` registrado
+        (evita spoofing de identidad).
+        """
+        try:
+            mensaje = json.loads(linea)
+        except json.JSONDecodeError:
+            self._enviar(cliente_socket, {"cmd": "error", "data": "JSON invalido"})
+            return True
+
+        cmd = str(mensaje.get('cmd', '')).lower()
+
+        if cmd == 'broadcast':
+            self._cmd_broadcast(nombre, mensaje.get('data', ''))
+            return True
+        if cmd == 'w':
+            self._cmd_privado(
+                origen=nombre,
+                destino=str(mensaje.get('to', '')).strip(),
+                contenido=mensaje.get('data', ''),
+                origen_socket=cliente_socket
+            )
+            return True
+        if cmd == 'list':
+            self._cmd_list(cliente_socket)
+            return True
+        if cmd == 'quit':
+            self._cmd_quit(nombre, cliente_socket)
+            return False  # Termina la sesion
+
+        self._enviar(cliente_socket, {
+            "cmd": "error",
+            "data": f"Comando desconocido: '{cmd}'"
+        })
+        return True
+
+    # ---------- Implementación de cada comando ------------------------- #
+    def _cmd_broadcast(self, origen: str, contenido: str) -> None:
+        """Envia el mensaje a todos los clientes conectados, excepto al origen."""
+        paquete = {"cmd": "broadcast", "from": origen, "data": contenido}
+
+        # Snapshot bajo lock para no iterar el dict mientras puede mutar
+        with self.lock:
+            destinatarios = [
+                (n, s) for n, s in self.clientes.items() if n != origen
+            ]
+
+        for _, sock in destinatarios:
+            self._enviar(sock, paquete)
+        logging.info(
+            f"[{origen}] /broadcast entregado a {len(destinatarios)} cliente(s)"
+        )
+
+    def _cmd_privado(
+        self,
+        origen: str,
+        destino: str,
+        contenido: str,
+        origen_socket: socket.socket
+    ) -> None:
+        """Mensaje privado a un destinatario especifico."""
+        if not destino:
+            self._enviar(origen_socket, {
+                "cmd": "error", "data": "Falta el campo 'to' para /w"
+            })
+            return
+
+        with self.lock:
+            destino_socket = self.clientes.get(destino)
+
+        if destino_socket is None:
+            self._enviar(origen_socket, {
+                "cmd": "error",
+                "data": f"Cliente '{destino}' no existe o no esta conectado"
+            })
+            logging.info(f"[{origen}] /w fallido: '{destino}' no existe")
+            return
+
+        self._enviar(destino_socket, {
+            "cmd": "w", "from": origen, "to": destino, "data": contenido
+        })
+        logging.info(f"[{origen}] /w privado a '{destino}'")
+
+    def _cmd_list(self, cliente_socket: socket.socket) -> None:
+        """Devuelve al solicitante la lista de clientes conectados."""
+        with self.lock:
+            nombres = sorted(self.clientes.keys())
+        self._enviar(cliente_socket, {"cmd": "list", "data": nombres})
+
+    def _cmd_quit(self, nombre: str, cliente_socket: socket.socket) -> None:
+        """Confirma quit; la limpieza la hace el finally de _manejar_cliente."""
+        self._enviar(cliente_socket, {
+            "cmd": "quit", "data": "Conexion cerrada"
+        })
+        logging.info(f"[{nombre}] solicito /quit")
+
+    # ------------------------------------------------------------------ #
     # Utilidad                                                            #
     # ------------------------------------------------------------------ #
     @staticmethod
@@ -215,7 +317,7 @@ class ServidorChat:
         try:
             sock.sendall((json.dumps(mensaje) + '\n').encode('utf-8'))
         except Exception:
-            pass  # La limpieza del cliente se hace en _manejar_cliente
+            pass  # La limpieza del cliente la hace _manejar_cliente
 
 
 def main() -> None:
