@@ -1,0 +1,1 @@
+# Sistema-de-Consenso-y-Validaci-n-de-Bloques-medante-un-Chat-Distribuido
