@@ -9,6 +9,11 @@ import logging
 import json
 
 
+# Limites defensivos
+MAX_LINE_BYTES: int = 64 * 1024     # 64 KB por mensaje JSON
+HANDSHAKE_TIMEOUT: float = 10.0     # segundos para enviar el register inicial
+
+
 class ServidorChat:
     """
     Servidor de chat TCP/IP que actúa como capa de transporte para
@@ -21,7 +26,7 @@ class ServidorChat:
     def __init__(self, host: str = 'localhost', puerto: int = 5000):
         self.host: str = host
         self.puerto: int = puerto
-        self.clientes: dict[str, socket.socket] = {}   # {nombre: socket}
+        self.clientes: dict[str, socket.socket] = {}
         self.lock: threading.Lock = threading.Lock()
         self.servidor_socket: socket.socket | None = None
         self.activo: bool = False
@@ -87,16 +92,38 @@ class ServidorChat:
             self.detener()
 
     def detener(self) -> None:
-        """Cierra el socket del servidor de forma idempotente."""
-        if not self.activo and self.servidor_socket is None:
+        """
+        Cierre limpio: marca el servidor como inactivo, cierra el socket
+        de escucha y fuerza la desconexion de todos los clientes activos.
+        Idempotente.
+        """
+        if not self.activo and self.servidor_socket is None and not self.clientes:
             return
+
         self.activo = False
+
+        # 1) Cerrar socket de aceptación
         if self.servidor_socket:
             try:
                 self.servidor_socket.close()
             except Exception:
                 pass
             self.servidor_socket = None
+
+        # 2) Forzar cierre de todos los clientes activos.
+        #    Sus hilos veran recv() devolver b'' y haran cleanup en su finally.
+        with self.lock:
+            sockets_clientes = list(self.clientes.values())
+        for sock in sockets_clientes:
+            try:
+                sock.shutdown(socket.SHUT_RDWR)
+            except Exception:
+                pass
+            try:
+                sock.close()
+            except Exception:
+                pass
+
         logging.info("Servidor detenido")
 
     # ------------------------------------------------------------------ #
@@ -116,7 +143,19 @@ class ServidorChat:
                 datos = cliente_socket.recv(4096)
                 if not datos:
                     break  # Cliente cerro el socket
-                buffer += datos.decode('utf-8')
+                buffer += datos.decode('utf-8', errors='replace')
+
+                # Defensa contra mensajes gigantes
+                if len(buffer) > MAX_LINE_BYTES:
+                    logging.warning(
+                        f"[{nombre}] excedio MAX_LINE_BYTES "
+                        f"({len(buffer)} bytes), desconectando"
+                    )
+                    self._enviar(cliente_socket, {
+                        "cmd": "error",
+                        "data": f"Mensaje excede {MAX_LINE_BYTES} bytes"
+                    })
+                    break
 
                 while '\n' in buffer:
                     linea, buffer = buffer.split('\n', 1)
@@ -125,12 +164,17 @@ class ServidorChat:
                         continue
                     seguir = self._procesar_mensaje(nombre, cliente_socket, linea)
                     if not seguir:
-                        return  # /quit -> salida limpia (finally hace cleanup)
+                        return  # /quit -> finally hace cleanup
 
-        except (ConnectionResetError, BrokenPipeError):
-            logging.warning(f"Cliente {nombre or direccion} desconectado abruptamente")
+        except (ConnectionResetError, BrokenPipeError, ConnectionAbortedError):
+            logging.warning(
+                f"Cliente {nombre or direccion} desconectado abruptamente"
+            )
+        except OSError as e:
+            # Socket cerrado durante detener() del servidor
+            logging.info(f"Cliente {nombre or direccion} cerrado: {e}")
         except Exception as e:
-            logging.error(f"Error con cliente {nombre or direccion}: {e}")
+            logging.exception(f"Error con cliente {nombre or direccion}: {e}")
         finally:
             if nombre:
                 with self.lock:
@@ -147,31 +191,56 @@ class ServidorChat:
         direccion: tuple
     ) -> str | None:
         """
-        Handshake inicial. Espera primer mensaje JSON:
+        Handshake inicial con timeout. Espera primer mensaje JSON:
             {"cmd": "register", "from": "<nombre>"}
-        Devuelve el nombre registrado o None si falla.
         """
         try:
+            cliente_socket.settimeout(HANDSHAKE_TIMEOUT)
+
             buffer = ""
             while '\n' not in buffer:
                 datos = cliente_socket.recv(1024)
                 if not datos:
                     return None
-                buffer += datos.decode('utf-8')
+                buffer += datos.decode('utf-8', errors='replace')
+                if len(buffer) > MAX_LINE_BYTES:
+                    return None
 
             linea = buffer.split('\n', 1)[0].strip()
-            mensaje = json.loads(linea)
 
-            if mensaje.get('cmd') != 'register' or not mensaje.get('from'):
+            try:
+                mensaje = json.loads(linea)
+            except json.JSONDecodeError:
+                self._enviar(cliente_socket, {
+                    "cmd": "error", "data": "JSON invalido"
+                })
+                return None
+
+            if not isinstance(mensaje, dict):
+                self._enviar(cliente_socket, {
+                    "cmd": "error", "data": "Mensaje debe ser un objeto JSON"
+                })
+                return None
+
+            if mensaje.get('cmd') != 'register':
                 self._enviar(cliente_socket, {
                     "cmd": "error",
                     "data": "Primer mensaje debe ser {cmd:'register', from:<nombre>}"
                 })
                 return None
 
-            nombre = mensaje['from'].strip()
+            nombre_raw = mensaje.get('from')
+            if not isinstance(nombre_raw, str):
+                self._enviar(cliente_socket, {
+                    "cmd": "error", "data": "Campo 'from' debe ser string"
+                })
+                return None
+
+            nombre = nombre_raw.strip()
             if not nombre:
-                self._enviar(cliente_socket, {"cmd": "error", "data": "Nombre vacio"})
+                self._enviar(cliente_socket, {
+                    "cmd": "error", "data": "Nombre vacio"
+                })
                 return None
 
             with self.lock:
@@ -190,15 +259,21 @@ class ServidorChat:
             logging.info(
                 f"Cliente registrado: '{nombre}' desde {direccion[0]}:{direccion[1]}"
             )
+
+            # Quitar timeout: el loop principal usa lectura bloqueante normal
+            cliente_socket.settimeout(None)
             return nombre
 
-        except json.JSONDecodeError:
-            self._enviar(cliente_socket, {"cmd": "error", "data": "JSON invalido"})
+        except socket.timeout:
+            logging.warning(
+                f"Handshake timeout desde {direccion[0]}:{direccion[1]} "
+                f"(>{HANDSHAKE_TIMEOUT}s sin register)"
+            )
             return None
-        except UnicodeDecodeError:
+        except (ConnectionResetError, BrokenPipeError):
             return None
         except Exception as e:
-            logging.error(f"Error en handshake con {direccion}: {e}")
+            logging.exception(f"Error en handshake con {direccion}: {e}")
             return None
 
     # ------------------------------------------------------------------ #
@@ -210,28 +285,37 @@ class ServidorChat:
         cliente_socket: socket.socket,
         linea: str
     ) -> bool:
-        """
-        Parsea un JSON entrante y lo despacha al comando correspondiente.
-        Devuelve True para seguir leyendo, False si la sesion termina.
-        IMPORTANTE: ignoramos `from` del cliente y usamos `nombre` registrado
-        (evita spoofing de identidad).
-        """
+        """Parsea un JSON entrante y lo despacha al comando correspondiente."""
         try:
             mensaje = json.loads(linea)
         except json.JSONDecodeError:
             self._enviar(cliente_socket, {"cmd": "error", "data": "JSON invalido"})
             return True
 
-        cmd = str(mensaje.get('cmd', '')).lower()
+        if not isinstance(mensaje, dict):
+            self._enviar(cliente_socket, {
+                "cmd": "error", "data": "Mensaje debe ser un objeto JSON"
+            })
+            return True
+
+        cmd_raw = mensaje.get('cmd')
+        if not isinstance(cmd_raw, str):
+            self._enviar(cliente_socket, {
+                "cmd": "error", "data": "Campo 'cmd' debe ser string"
+            })
+            return True
+        cmd = cmd_raw.lower()
 
         if cmd == 'broadcast':
-            self._cmd_broadcast(nombre, mensaje.get('data', ''))
+            self._cmd_broadcast(nombre, str(mensaje.get('data', '')))
             return True
         if cmd == 'w':
+            destino_raw = mensaje.get('to', '')
+            destino = destino_raw.strip() if isinstance(destino_raw, str) else ''
             self._cmd_privado(
                 origen=nombre,
-                destino=str(mensaje.get('to', '')).strip(),
-                contenido=mensaje.get('data', ''),
+                destino=destino,
+                contenido=str(mensaje.get('data', '')),
                 origen_socket=cliente_socket
             )
             return True
@@ -240,7 +324,7 @@ class ServidorChat:
             return True
         if cmd == 'quit':
             self._cmd_quit(nombre, cliente_socket)
-            return False  # Termina la sesion
+            return False
 
         self._enviar(cliente_socket, {
             "cmd": "error",
@@ -253,16 +337,17 @@ class ServidorChat:
         """Envia el mensaje a todos los clientes conectados, excepto al origen."""
         paquete = {"cmd": "broadcast", "from": origen, "data": contenido}
 
-        # Snapshot bajo lock para no iterar el dict mientras puede mutar
         with self.lock:
             destinatarios = [
                 (n, s) for n, s in self.clientes.items() if n != origen
             ]
 
+        entregados = 0
         for _, sock in destinatarios:
-            self._enviar(sock, paquete)
+            if self._enviar(sock, paquete):
+                entregados += 1
         logging.info(
-            f"[{origen}] /broadcast entregado a {len(destinatarios)} cliente(s)"
+            f"[{origen}] /broadcast entregado a {entregados}/{len(destinatarios)} cliente(s)"
         )
 
     def _cmd_privado(
@@ -312,12 +397,16 @@ class ServidorChat:
     # Utilidad                                                            #
     # ------------------------------------------------------------------ #
     @staticmethod
-    def _enviar(sock: socket.socket, mensaje: dict) -> None:
-        """Envia un dict como JSON line-delimited al socket dado."""
+    def _enviar(sock: socket.socket, mensaje: dict) -> bool:
+        """
+        Envia un dict como JSON line-delimited al socket dado.
+        Devuelve True si se envio, False si fallo (socket muerto, etc).
+        """
         try:
             sock.sendall((json.dumps(mensaje) + '\n').encode('utf-8'))
+            return True
         except Exception:
-            pass  # La limpieza del cliente la hace _manejar_cliente
+            return False
 
 
 def main() -> None:
