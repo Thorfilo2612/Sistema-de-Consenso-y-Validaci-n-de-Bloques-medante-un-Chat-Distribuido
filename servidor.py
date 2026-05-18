@@ -65,6 +65,9 @@ class ServidorChat:
         """Crea el socket, hace bind/listen y entra al loop de accept()."""
         self.servidor_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.servidor_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        # Timeout corto en accept() para que Ctrl+C funcione en Windows:
+        # accept() despierta cada 1s y Python puede procesar la senial SIGINT.
+        self.servidor_socket.settimeout(1.0)
 
         try:
             self.servidor_socket.bind((self.host, self.puerto))
@@ -75,6 +78,9 @@ class ServidorChat:
             while self.activo:
                 try:
                     cliente_socket, direccion = self.servidor_socket.accept()
+                    # El cliente hereda el timeout del listener en algunas
+                    # plataformas; lo dejamos en modo bloqueante explicito.
+                    cliente_socket.settimeout(None)
                     logging.info(f"Nueva conexion desde {direccion[0]}:{direccion[1]}")
 
                     hilo = threading.Thread(
@@ -83,7 +89,11 @@ class ServidorChat:
                         daemon=True
                     )
                     hilo.start()
+                except socket.timeout:
+                    # Despertar periodico: no hubo conexion, solo seguimos el loop
+                    continue
                 except OSError:
+                    # Socket cerrado por detener() -> salir limpio
                     break
 
         except Exception as e:
