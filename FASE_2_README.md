@@ -41,29 +41,30 @@ python monitor.py
 
 ```
 ## Comandos
-
+```
 cargar_bloques(archivo, validadores=[...])	
 distribuir_bloque(id)	
 mostrar_blockchain()	
 salir()	
-
+```
 ## Ejemplos
-
+```bash
 > cargar_bloques(bloques.txt, validadores=["val1","val2","val3"])
 ✓ Cargados 3 bloques
 
 > distribuir_bloque(1)
 ✓ Bloque #1 distribuido a 3 validadores
-
+```
 ## Formato de bloques 
 
+```
 alice->bob:100
 bob->carol:50
 ---
 alice->bob:200
 ---
 carol->bob:30
-
+```
 ### Cada línea = transacción: origen->destino:cantidad
 
 --- = separador de bloques
