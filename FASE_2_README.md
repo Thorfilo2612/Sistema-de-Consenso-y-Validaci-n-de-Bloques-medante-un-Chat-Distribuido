@@ -34,3 +34,76 @@ Monitor que carga transacciones, las agrupa en bloques y las distribuye a valida
 ```bash
 python servidor.py
 
+```
+## 2. Iniciar Monitor
+```bash
+python monitor.py
+
+```
+## Comandos
+
+cargar_bloques(archivo, validadores=[...])	
+distribuir_bloque(id)	
+mostrar_blockchain()	
+salir()	
+
+## Ejemplos
+
+> cargar_bloques(bloques.txt, validadores=["val1","val2","val3"])
+✓ Cargados 3 bloques
+
+> distribuir_bloque(1)
+✓ Bloque #1 distribuido a 3 validadores
+
+## Formato de bloques 
+
+alice->bob:100
+bob->carol:50
+---
+alice->bob:200
+---
+carol->bob:30
+
+### Cada línea = transacción: origen->destino:cantidad
+
+--- = separador de bloques
+
+### Resultado:
+
+Bloque 1: 2 transacciones
+
+Bloque 2: 1 transacción
+
+Bloque 3: 1 transacción
+
+---------
+
+## 🔷 Clase Bloque (bloque.py)
+
+from bloque import Bloque
+
+# Crear bloque
+b = Bloque(1, ["alice->bob:100"], "0")
+
+# Ver hash
+print(b.hash)  # 64 caracteres hexadecimales
+
+# Convertir a JSON
+dict_b = b.to_dict()
+
+# Recuperar desde JSON
+b2 = Bloque.from_dict(dict_b)
+
+Hash = SHA-256(id + transacciones + previous_hash + nonce)
+
+## 🐛 Problemas comunes
+
+Problema -->	Solución
+
+Connection refused	¿Servidor corriendo? python servidor.py
+FileNotFoundError	¿Existe bloques.txt?
+No carga bloques	¿Usaste --- como separador?
+
+
+
+
