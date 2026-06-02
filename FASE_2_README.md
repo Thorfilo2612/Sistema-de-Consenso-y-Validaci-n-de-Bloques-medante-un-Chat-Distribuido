@@ -80,7 +80,7 @@ Bloque 3: 1 transacción
 ---------
 
 ## 🔷 Clase Bloque (bloque.py)
-
+```bash
 from bloque import Bloque
 
 # Crear bloque
@@ -94,6 +94,7 @@ dict_b = b.to_dict()
 
 # Recuperar desde JSON
 b2 = Bloque.from_dict(dict_b)
+```
 
 Hash = SHA-256(id + transacciones + previous_hash + nonce)
 
