@@ -102,9 +102,11 @@ Hash = SHA-256(id + transacciones + previous_hash + nonce)
 
 Problema -->	Solución
 
-Connection refused	¿Servidor corriendo? python servidor.py
-FileNotFoundError	¿Existe bloques.txt?
-No carga bloques	¿Usaste --- como separador?
+Connection refused --->	¿Servidor corriendo? python servidor.py
+
+FileNotFoundError --->	¿Existe bloques.txt?
+
+No carga bloques --->	¿Usaste --- como separador?
 
 
 
