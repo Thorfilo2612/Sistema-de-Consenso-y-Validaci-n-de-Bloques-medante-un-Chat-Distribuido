@@ -1,0 +1,12 @@
+alice->bob:100
+bob->carol:50
+carol->alice:25
+
+---
+
+alice->bob:200
+bob->alice:75
+
+---
+
+carol->bob:30
