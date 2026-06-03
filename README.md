@@ -734,5 +734,5 @@ Proyecto educativo - Universidad Metropolitana de Caracas
 
 ---
 
-**Última actualización:** Junio 2024
+**Última actualización:** Junio 2026
 **Versión:** 2.0 (Fase 1 + Fase 2 Completa)
