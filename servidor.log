@@ -1,0 +1,26 @@
+[2026-06-13 23:49:58] [INFO] ServidorChat inicializado en localhost:5000
+[2026-06-13 23:49:58] [INFO] Servidor escuchando en localhost:5000
+[2026-06-13 23:50:21] [INFO] Nueva conexion desde 127.0.0.1:50911
+[2026-06-13 23:50:21] [INFO] Cliente registrado: 'PapitaRiquita' desde 127.0.0.1:50911
+[2026-06-13 23:51:05] [INFO] Nueva conexion desde 127.0.0.1:51635
+[2026-06-13 23:51:05] [INFO] Cliente registrado: 'Val2' desde 127.0.0.1:51635
+[2026-06-13 23:51:17] [INFO] Nueva conexion desde 127.0.0.1:51659
+[2026-06-13 23:51:17] [INFO] Cliente registrado: 'Val3' desde 127.0.0.1:51659
+[2026-06-13 23:52:43] [INFO] Nueva conexion desde 127.0.0.1:54184
+[2026-06-13 23:52:43] [INFO] Cliente registrado: 'Monitor' desde 127.0.0.1:54184
+[2026-06-13 23:54:14] [WARNING] Cliente Monitor desconectado abruptamente
+[2026-06-13 23:54:14] [INFO] Cliente 'Monitor' desconectado
+[2026-06-13 23:54:46] [INFO] Nueva conexion desde 127.0.0.1:53716
+[2026-06-13 23:54:46] [INFO] Cliente registrado: 'Monitor' desde 127.0.0.1:53716
+[2026-06-13 23:59:28] [INFO] ServidorChat inicializado en localhost:5000
+[2026-06-13 23:59:28] [INFO] Servidor escuchando en localhost:5000
+[2026-06-14 00:00:07] [INFO] Nueva conexion desde 127.0.0.1:64727
+[2026-06-14 00:00:07] [INFO] Cliente registrado: 'val1' desde 127.0.0.1:64727
+[2026-06-14 00:00:32] [INFO] Nueva conexion desde 127.0.0.1:58915
+[2026-06-14 00:00:32] [INFO] Cliente registrado: 'val2' desde 127.0.0.1:58915
+[2026-06-14 00:00:57] [INFO] Nueva conexion desde 127.0.0.1:58999
+[2026-06-14 00:00:57] [INFO] Cliente registrado: 'Monitor' desde 127.0.0.1:58999
+[2026-06-14 00:01:41] [INFO] [Monitor] /w privado a 'val1'
+[2026-06-14 00:01:41] [INFO] [Monitor] /w privado a 'val2'
+[2026-06-14 00:01:41] [INFO] [val1] /broadcast entregado a 2/2 cliente(s)
+[2026-06-14 00:01:41] [INFO] [val2] /broadcast entregado a 2/2 cliente(s)

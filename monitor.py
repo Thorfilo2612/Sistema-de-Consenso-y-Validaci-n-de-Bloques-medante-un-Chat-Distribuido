@@ -47,6 +47,12 @@ class Monitor:
     
     def distribuir_bloque(self, bloque_id: int):
         bloque = self.bloques[bloque_id]
+        
+        # --- NUEVO: Minar el bloque antes de enviarlo ---
+        dificultad_red = 1 # Debe coincidir con la del Ledger de los validadores
+        bloque.minar(dificultad_red)
+        # ------------------------------------------------
+        
         for val in self.validadores:
             mensaje = {
                 "cmd": "w",
@@ -55,7 +61,7 @@ class Monitor:
             }
             self.socket.sendall(json.dumps(mensaje).encode() + b'\n')
         print(f"✓ Bloque #{bloque_id} distribuido a {len(self.validadores)} validadores")
-    
+        
     def menu(self):
         while True:
             cmd = input("\n> ").strip()

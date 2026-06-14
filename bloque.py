@@ -28,3 +28,25 @@ class Bloque:
     
     def __repr__(self) -> str:
         return f"Bloque(id={self.id}, txs={len(self.transacciones)}, hash={self.hash[:8]}...)"
+    
+    def minar(self, dificultad: int) -> None:
+        """
+        Implementa el acertijo matemático (Proof of Work).
+        Busca un nonce tal que el hash comience con N ceros.
+        """
+        prefijo_requerido = "0" * dificultad
+        
+        # Iniciamos el nonce en 0 si está vacío
+        if not self.nonce:
+            self.nonce = "0"
+            
+        print(f"Minando bloque {self.id} con dificultad {dificultad}...")
+        
+        # Iteramos hasta que el hash cumpla con la regla
+        while not self.hash.startswith(prefijo_requerido):
+            # Incrementamos el nonce
+            self.nonce = str(int(self.nonce) + 1)
+            # Recalculamos el hash
+            self.hash = self._calcular_hash()
+            
+        print(f"¡Bloque {self.id} minado! Nonce final: {self.nonce} | Hash: {self.hash[:15]}...")
