@@ -1,0 +1,181 @@
+/* Header.css */
+
+.app-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+  height: var(--header-height);
+  background: #161616;
+  border-bottom: 1px solid #2A2A2A;
+  position: sticky;
+  top: 0;
+  z-index: var(--z-sticky);
+  flex-shrink: 0;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-shrink: 0;
+}
+
+.header-center {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-shrink: 0;
+}
+
+/* ── Sidebar toggle ──────────────────────────────────────────── */
+.sidebar-toggle {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 6px 5px;
+  border: 1px solid #2A2A2A;
+  border-radius: var(--radius-sm);
+  color: var(--text-muted);
+  background: transparent;
+  flex-shrink: 0;
+  transition: border-color var(--dur-fast), color var(--dur-fast);
+}
+
+.sidebar-toggle:hover {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+.sidebar-toggle:active { transform: scale(0.95); }
+
+.toggle-bars {
+  display: flex;
+  flex-direction: column;
+  gap: 3.5px;
+  width: 14px;
+}
+
+.toggle-bars span {
+  display: block;
+  height: 1.5px;
+  background: currentColor;
+}
+
+/* ── Brand ───────────────────────────────────────────────────── */
+.header-brand {
+  display: flex;
+  align-items: baseline;
+  gap: 3px;
+  user-select: none;
+  white-space: nowrap;
+}
+
+.brand-name {
+  font-family: var(--font-body);
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: -0.01em;
+}
+
+.brand-dot {
+  font-family: var(--font-body);
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--color-primary);
+  line-height: 1;
+}
+
+.brand-sub {
+  font-family: var(--font-body);
+  font-size: 17px;
+  font-weight: 400;
+  color: var(--text-muted);
+  letter-spacing: -0.01em;
+}
+
+/* ── Node chip ───────────────────────────────────────────────── */
+.node-chip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px;
+  background: #1E1E1E;
+  border: 1px solid #2A2A2A;
+  border-radius: var(--radius-pill);
+  cursor: default;
+  transition: border-color var(--dur-fast);
+}
+
+.node-chip:hover {
+  border-color: rgba(0, 200, 150, 0.30);
+}
+
+.node-chip-label {
+  font-family: var(--font-body);
+  font-size: 9px;
+  font-weight: 500;
+  color: var(--text-faint);
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
+}
+
+.node-chip-name {
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-primary);
+  letter-spacing: 0.02em;
+}
+
+.node-chip-bar {
+  display: none;
+}
+
+/* ── Divider + Clock ─────────────────────────────────────────── */
+.header-divider {
+  display: inline-block;
+  width: 1px;
+  height: 20px;
+  background: #2A2A2A;
+}
+
+.header-clock {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--text-faint);
+  letter-spacing: 0.04em;
+  font-feature-settings: "tnum";
+  white-space: nowrap;
+  min-width: 7ch;
+  text-align: right;
+}
+
+/* ── Connection status in header ─────────────────────────────── */
+.app-header .conn-status {
+  border-radius: var(--radius-pill);
+  font-size: 11px;
+  padding: 5px 12px;
+}
+
+/* ── Responsive ──────────────────────────────────────────────── */
+@media (max-width: 680px) {
+  .header-center { display: none; }
+  .app-header { padding: 0 14px; }
+}
+
+@media (max-width: 480px) {
+  .header-divider, .header-clock { display: none; }
+  .brand-sub, .brand-dot { display: none; }
+}

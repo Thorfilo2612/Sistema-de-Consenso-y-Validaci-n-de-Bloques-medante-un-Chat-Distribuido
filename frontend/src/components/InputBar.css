@@ -1,0 +1,261 @@
+/* InputBar.css */
+
+.input-bar {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  border-top: 1px solid #2A2A2A;
+  background: #161616;
+  flex-shrink: 0;
+}
+
+/* ── Main row ────────────────────────────────────────────────── */
+.input-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+}
+
+/* ── Mode badge ──────────────────────────────────────────────── */
+.input-mode-badge {
+  font-family: var(--font-body);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.10em;
+  color: var(--text-faint);
+  padding: 3px 8px;
+  border: 1px solid #2A2A2A;
+  border-radius: var(--radius-sm);
+  background: #1E1E1E;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition:
+    color var(--dur-fast) var(--ease-out),
+    border-color var(--dur-fast) var(--ease-out),
+    background var(--dur-fast) var(--ease-out);
+  cursor: default;
+  user-select: none;
+}
+
+.badge--cmd {
+  color: var(--color-primary);
+  border-color: rgba(0, 200, 150, 0.25);
+  background: rgba(0, 200, 150, 0.06);
+}
+
+/* ── Input field wrapper ─────────────────────────────────────── */
+.input-field-wrap {
+  flex: 1;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  min-width: 0;
+}
+
+/* ── Text input ──────────────────────────────────────────────── */
+.msg-input {
+  width: 100%;
+  padding: 8px 12px;
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  color: var(--text-primary);
+  background: #1E1E1E;
+  border: 1px solid #2A2A2A;
+  border-radius: var(--radius-sm);
+  transition:
+    border-color var(--dur-fast) var(--ease-out),
+    box-shadow var(--dur-fast) var(--ease-out);
+  line-height: 1.5;
+}
+
+.msg-input::placeholder {
+  color: var(--text-faint);
+}
+
+.msg-input:focus {
+  border-color: rgba(0, 200, 150, 0.50);
+  box-shadow: 0 0 0 2px rgba(0, 200, 150, 0.10);
+  outline: none;
+}
+
+.msg-input:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.msg-input--cmd {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--color-primary);
+  border-color: rgba(0, 200, 150, 0.25);
+  background: rgba(0, 200, 150, 0.04);
+  letter-spacing: 0.02em;
+}
+
+.msg-input--cmd:focus {
+  border-color: rgba(0, 200, 150, 0.55);
+  box-shadow: 0 0 0 2px rgba(0, 200, 150, 0.10);
+}
+
+.msg-input--sending {
+  opacity: 0.45;
+}
+
+/* ── Command hint ────────────────────────────────────────────── */
+.input-cmd-hint {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--color-primary);
+  letter-spacing: 0.04em;
+  pointer-events: none;
+  white-space: nowrap;
+  opacity: 0.6;
+  animation: fadeIn var(--dur-fast) var(--ease-out) both;
+}
+
+/* ── Send button ─────────────────────────────────────────────── */
+.send-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 72px;
+  height: 36px;
+  padding: 0 var(--space-2);
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: #0A0A0A;
+  background: var(--color-primary);
+  border-radius: var(--radius-sm);
+  flex-shrink: 0;
+  transition:
+    opacity var(--dur-fast) var(--ease-out),
+    transform var(--dur-fast) var(--ease-out),
+    box-shadow var(--dur-fast) var(--ease-out);
+  user-select: none;
+  border: none;
+  cursor: pointer;
+}
+
+.send-btn:hover:not(:disabled) {
+  opacity: 0.88;
+  box-shadow: 0 0 14px rgba(0, 200, 150, 0.28);
+  transform: translateY(-1px);
+}
+
+.send-btn:active:not(:disabled) {
+  transform: translateY(0);
+  box-shadow: none;
+}
+
+.send-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.send-btn:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 3px;
+}
+
+.send-btn--sent {
+  background: var(--color-primary);
+  cursor: default;
+}
+
+.send-btn--sending {
+  background: var(--color-primary-dim);
+  cursor: wait;
+}
+
+/* ── Button content ──────────────────────────────────────────── */
+.btn-label { display: block; line-height: 1; }
+
+.btn-check {
+  font-family: var(--font-body);
+  font-size: 16px;
+  font-weight: 600;
+  display: block;
+  line-height: 1;
+  color: #0A0A0A;
+}
+
+.btn-spinner {
+  display: block;
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(10, 10, 10, 0.25);
+  border-top-color: #0A0A0A;
+  border-radius: 50%;
+  animation: spin 0.65s linear infinite;
+  flex-shrink: 0;
+}
+
+.anim-checkmark {
+  animation: checkmark var(--dur-slow) var(--ease-spring) both;
+}
+
+/* ── Shortcuts row ───────────────────────────────────────────── */
+.shortcuts-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: 4px var(--space-3) 6px;
+  border-top: 1px solid #2A2A2A;
+  overflow-x: auto;
+  scrollbar-width: none;
+  flex-wrap: nowrap;
+}
+
+.shortcuts-row::-webkit-scrollbar { display: none; }
+
+.shortcut {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.shortcut-cmd {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--color-primary);
+  letter-spacing: 0.03em;
+  background: rgba(0, 200, 150, 0.07);
+  border: 1px solid rgba(0, 200, 150, 0.15);
+  padding: 1px 5px;
+  border-radius: var(--radius-sm);
+}
+
+.shortcut-hint {
+  font-family: var(--font-body);
+  font-size: 10px;
+  color: var(--text-faint);
+  letter-spacing: 0.02em;
+}
+
+.shortcut--enter .shortcut-cmd {
+  color: var(--text-muted);
+  background: #1E1E1E;
+  border-color: #2A2A2A;
+}
+
+/* ── Responsive ──────────────────────────────────────────────── */
+@media (max-width: 480px) {
+  .input-row { padding: var(--space-2); gap: var(--space-2); }
+  .send-btn  { width: 56px; font-size: 10px; }
+  .shortcuts-row { gap: var(--space-2); }
+}
+
+@media (max-width: 360px) {
+  .shortcuts-row { display: none; }
+}

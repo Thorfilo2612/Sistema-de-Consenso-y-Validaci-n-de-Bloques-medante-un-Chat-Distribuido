@@ -1,0 +1,183 @@
+/* animations.css — IMPECCABLE motion: every animation reveals, not decorates */
+/* Easing: spring + smooth. No bounce, no elastic. */
+
+/* ── @keyframes ───────────────────────────────────────────────── */
+
+@keyframes slideInRight {
+  from { opacity: 0; transform: translateX(14px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes slideInUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* Active node dot ping */
+@keyframes dotPingGreen {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(0, 200, 150, 0.45); }
+  60%       { box-shadow: 0 0 0 5px transparent; }
+}
+
+@keyframes dotPingPurple {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(0, 200, 150, 0.35); }
+  60%       { box-shadow: 0 0 0 5px transparent; }
+}
+
+@keyframes dotPulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%       { opacity: 0.35; transform: scale(0.75); }
+}
+
+/* Send checkmark (spring) */
+@keyframes checkmark {
+  0%   { opacity: 0; transform: scale(0.3) rotate(-8deg); }
+  55%  { opacity: 1; transform: scale(1.18) rotate(3deg); }
+  100% { opacity: 1; transform: scale(1) rotate(0deg); }
+}
+
+/* Button spinner */
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Flash private message highlight */
+@keyframes flashPrivate {
+  0%   { background-color: rgba(139,132,184,0.09); }
+  100% { background-color: rgba(139,132,184,0.05); }
+}
+
+/* Flash accent (consensus/validation) */
+@keyframes flashAccent {
+  0%   { background-color: rgba(0, 200, 150, 0.10); }
+  100% { background-color: transparent; }
+}
+
+/* Border pulse on input focus */
+@keyframes inputGlow {
+  0%, 100% { box-shadow: 0 0 0 0 var(--color-primary-glow); }
+  50%       { box-shadow: 0 0 0 3px var(--color-primary-glow); }
+}
+
+/* ── CONSENSUS ORB ANIMATIONS ──────────────────────────────── */
+
+/* Orb center block pulse — quorum reached */
+@keyframes orbPulse {
+  0%   { filter: brightness(1)   drop-shadow(0 0 4px rgba(74, 108, 247, 0.35)); }
+  40%  { filter: brightness(1.5) drop-shadow(0 0 8px rgba(74, 108, 247, 0.6)); }
+  100% { filter: brightness(1)   drop-shadow(0 0 4px rgba(74, 108, 247, 0.35)); }
+}
+
+/* Voted node ring pulse — pixel-discrete */
+@keyframes nodePulseVoted {
+  0%   { opacity: 1;    transform: scale(1); }
+  50%  { opacity: 0.75; transform: scale(1.12); }
+  100% { opacity: 1;    transform: scale(1); }
+}
+
+/* Dash flow toward center along the vote path */
+@keyframes dashFlow {
+  from { stroke-dashoffset: 40; }
+  to   { stroke-dashoffset: 0; }
+}
+
+/* Slow rotation for the orbital ring */
+@keyframes orbRingRotate {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+/* Committed flash — entire orb brightens */
+@keyframes orbCommit {
+  0%   { opacity: 1; }
+  20%  { opacity: 0.3; }
+  40%  { opacity: 1; }
+  60%  { opacity: 0.6; }
+  100% { opacity: 1; }
+}
+
+/* Dithered dot appearance for background starfield */
+@keyframes starTwinkle {
+  0%, 100% { opacity: 0.15; }
+  50%       { opacity: 0.55; }
+}
+
+/* ── Utility animation classes ────────────────────────────────── */
+
+.anim-slide-in-right {
+  animation: slideInRight var(--dur-normal) var(--ease-out) both;
+}
+
+.anim-slide-in-up {
+  animation: slideInUp var(--dur-normal) var(--ease-out) both;
+}
+
+.anim-fade-in {
+  animation: fadeIn var(--dur-normal) var(--ease-out) both;
+}
+
+/* ── PIXEL-ART ANIMATIONS ─────────────────────────────────────── */
+
+/* Block enters from the right in discrete steps */
+@keyframes pixelBlockEnter {
+  from { opacity: 0; transform: translateX(12px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+/* Vote particle travels left-to-right, grid-snapped */
+@keyframes voteFly {
+  from { transform: translateX(0);                    opacity: 1; }
+  to   { transform: translateX(var(--travel, 60px));  opacity: 0; }
+}
+
+/* Own-node sprite pulse — 4 frames */
+@keyframes spritePulse {
+  0%   { filter: brightness(1)   drop-shadow(0 0 2px currentColor); }
+  25%  { filter: brightness(1.5) drop-shadow(0 0 5px currentColor); }
+  50%  { filter: brightness(1)   drop-shadow(0 0 2px currentColor); }
+  75%  { filter: brightness(0.7) drop-shadow(0 0 1px currentColor); }
+  100% { filter: brightness(1)   drop-shadow(0 0 2px currentColor); }
+}
+
+/* Feed entry slides in from left with brief highlight */
+@keyframes feedEntry {
+  from { opacity: 0; transform: translateX(-6px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+/* Subtle CRT flicker on the whole panel */
+@keyframes crtFlicker {
+  0%, 94%, 100% { opacity: 1; }
+  95%            { opacity: 0.96; }
+  97%            { opacity: 0.92; }
+}
+
+/* Vote segment fills in (used on individual bar cells) */
+@keyframes segmentFill {
+  from { opacity: 0; transform: scaleX(0); }
+  to   { opacity: 1; transform: scaleX(1); }
+}
+
+/* Utility classes */
+.anim-pixel-enter {
+  animation: pixelBlockEnter 200ms steps(4, end) both;
+}
+
+.anim-feed-entry {
+  animation: feedEntry var(--dur-normal) var(--ease-out) both;
+}
+
+/* ── Reduced motion: crossfade or instant ─────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration:       0.01ms !important;
+    animation-iteration-count: 1     !important;
+    transition-duration:      0.01ms !important;
+    scroll-behavior:          auto   !important;
+  }
+}

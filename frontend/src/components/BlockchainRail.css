@@ -1,0 +1,206 @@
+/* BlockchainRail.css */
+
+.blockchain-rail {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+/* ── Header ───────────────────────────────────────────────────── */
+.rail-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px 8px;
+  border-bottom: 1px solid var(--border-subtle);
+  flex-shrink: 0;
+}
+
+.rail-title {
+  font-family: var(--font-body);
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-muted);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.rail-count {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--color-primary);
+}
+
+/* ── Scroll rail ──────────────────────────────────────────────── */
+.rail-scroll {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  padding: 12px 14px;
+  overflow-x: auto;
+  overflow-y: visible;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: thin;
+  scrollbar-color: var(--gray-400) transparent;
+  min-height: 0;
+  flex: 1;
+  /* Prevent tiles from wrapping */
+  flex-wrap: nowrap;
+  white-space: nowrap;
+}
+
+.rail-scroll::-webkit-scrollbar { height: 3px; }
+.rail-scroll::-webkit-scrollbar-thumb { background: var(--gray-400); border-radius: 2px; }
+
+/* ── Block tile ───────────────────────────────────────────────── */
+.block-tile {
+  position: relative;
+  flex-shrink: 0;
+  width: 130px;
+  min-width: 130px;
+  height: 82px;
+  scroll-snap-align: start;
+  border: 1px solid #2A2A2A;
+  border-radius: 6px;
+  display: flex;
+  align-items: stretch;
+  cursor: default;
+  background: #161616;
+  overflow: hidden;
+  transition: transform var(--dur-fast) var(--ease-out),
+              box-shadow var(--dur-fast) var(--ease-out);
+  /* Reset white-space for internal text */
+  white-space: normal;
+}
+
+.block-tile:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5);
+  z-index: 1;
+}
+
+.block-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 3px;
+  padding: 8px 10px;
+  width: 100%;
+  overflow: hidden;
+}
+
+/* ── Status variants: 3px left border ────────────────────────── */
+.block-tile--validated {
+  border-left: 3px solid var(--color-primary);
+}
+
+.block-tile--propagating {
+  border-left: 3px solid var(--color-primary);
+  opacity: 0.85;
+}
+
+.block-tile--pending {
+  border-left: 3px solid var(--color-amber);
+}
+
+.block-tile--forked {
+  border-left: 3px solid var(--color-secondary);
+  opacity: 0.75;
+}
+
+/* ── Block content ────────────────────────────────────────────── */
+.block-id {
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.2;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 108px;
+}
+
+.block-tile--validated   .block-id { color: var(--text-primary); }
+.block-tile--propagating .block-id { color: var(--text-primary); }
+.block-tile--pending     .block-id { color: var(--text-primary); }
+.block-tile--forked      .block-id { color: var(--text-muted); }
+
+.block-hash {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--text-muted);
+  letter-spacing: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 108px;
+}
+
+.block-time {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  color: var(--text-faint);
+  white-space: nowrap;
+}
+
+.block-proposer {
+  font-family: var(--font-body);
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--color-primary);
+  letter-spacing: 0.01em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 108px;
+}
+
+.block-pending-dots {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--color-amber);
+  letter-spacing: 3px;
+  animation: dotPulse 1.2s ease-in-out infinite;
+}
+
+/* ── Chain connector ──────────────────────────────────────────── */
+.block-connector {
+  position: absolute;
+  left: -10px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 10px;
+  height: 1px;
+  background: #2A2A2A;
+  z-index: 0;
+}
+
+.block-tile + .block-tile {
+  margin-left: 10px;
+}
+
+/* ── Legend ───────────────────────────────────────────────────── */
+.rail-legend {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 6px 14px;
+  border-top: 1px solid var(--border-subtle);
+  flex-shrink: 0;
+}
+
+.legend-item {
+  font-family: var(--font-body);
+  font-size: 9px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.legend-item--propagating { color: var(--color-primary); opacity: 0.7; }
+.legend-item--validated   { color: var(--color-primary); }
+.legend-item--pending     { color: var(--color-amber); }
+.legend-item--forked      { color: var(--color-secondary); }

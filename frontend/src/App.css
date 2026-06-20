@@ -1,0 +1,42 @@
+/* App.css — Shell layout: broken grid, asymmetric, TASTE variance 8/10 */
+
+.app-shell {
+  display: grid;
+  grid-template-rows: var(--header-height) 1fr;
+  height: 100dvh;
+  overflow: hidden;
+  background: var(--bg-base);
+}
+
+/* Two-column body: users sidebar | chat column */
+.app-body {
+  display: grid;
+  grid-template-columns: var(--users-width) 1fr;
+  overflow: hidden;
+}
+
+/* Sidebar collapse: narrow the first column to 0 */
+.app-shell.sidebar-closed .app-body {
+  grid-template-columns: 0 1fr;
+}
+
+/* Chat column: messages (flex 1) + input (auto height) */
+.chat-column {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  min-width: 0;
+}
+
+/* ── Mobile: sidebar overlays, not pushes ─────────────────────── */
+@media (max-width: 768px) {
+  .app-body {
+    grid-template-columns: 1fr;
+    position: relative;
+  }
+
+  /* Users panel becomes a floating overlay on mobile */
+  .app-shell.sidebar-open .app-body {
+    grid-template-columns: 1fr;
+  }
+}

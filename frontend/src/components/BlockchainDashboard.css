@@ -1,0 +1,73 @@
+/* BlockchainDashboard.css */
+
+/* ── Panel base: flat dark surface ───────────────────────────── */
+.panel--crt {
+  position: relative;
+  background: #161616;
+  border: 1px solid #2A2A2A;
+  border-radius: var(--radius-md);
+}
+
+/* ── Dashboard shell ──────────────────────────────────────────── */
+.blockchain-dashboard {
+  display: flex;
+  flex-direction: column;
+  height: 100dvh;
+  overflow: hidden;
+  background-color: #0F0F0F;
+}
+
+/* ── Three-column body ────────────────────────────────────────── */
+.dashboard-body {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 220px 1fr 280px;
+  gap: 8px;
+  padding: 8px;
+  overflow: hidden;
+  min-height: 0;
+}
+
+.blockchain-dashboard.sidebar-closed .dashboard-body {
+  grid-template-columns: 0 1fr 280px;
+}
+
+.blockchain-dashboard.sidebar-closed .node-grid {
+  overflow: hidden;
+  width: 0;
+  min-width: 0;
+  border: none;
+  padding: 0;
+}
+
+/* ── Center column ────────────────────────────────────────────── */
+.center-column {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  overflow: hidden;
+  min-height: 0;
+}
+
+.center-column .blockchain-rail {
+  flex-shrink: 0;
+}
+
+.center-column .consensus-panel {
+  flex: 1;
+  min-height: 0;
+}
+
+/* ── Mobile ───────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .dashboard-body {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto 1fr;
+    gap: 6px;
+    padding: 6px;
+  }
+  .node-grid { display: none; }
+  .blockchain-dashboard.sidebar-closed .dashboard-body {
+    grid-template-columns: 1fr;
+  }
+}

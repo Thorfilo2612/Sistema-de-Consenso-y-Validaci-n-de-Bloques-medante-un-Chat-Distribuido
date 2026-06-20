@@ -17,6 +17,7 @@
 - [FASE 2: Nodo Monitor + Bloques](#fase-2-nodo-monitor--bloques)
 - [FASE 3: Validadores y Consenso](#fase-3-validadores-y-consenso)
 - [Ejecución Completa (Demo end-to-end)](#ejecución-completa-demo-end-to-end)
+- [Interfaz Web (Frontend)](#interfaz-web-frontend)
 - [Testing](#testing)
 - [Resolución de Problemas](#-resolución-de-problemas)
 - [Estado del Proyecto](#-estado-del-proyecto)
@@ -100,6 +101,8 @@ proyecto/
 ├── bloques.txt                  # Fase 2: Transacciones de ejemplo
 ├── validador.py                 # Fase 3: Nodo Validador (verifica y vota)
 ├── ledger.py                    # Fase 3: Blockchain local + reglas de validación
+├── bridge.py                    # Interfaz: puente WebSocket<->TCP para el frontend
+├── frontend/                    # Interfaz: dashboard React (Vite)
 └── servidor.log                 # (Generado en runtime)
 ```
 
@@ -451,6 +454,75 @@ En las terminales 2 y 3 (validadores) se verá en paralelo:
 
 ---
 
+# Interfaz Web (Frontend)
+
+## Descripción
+
+Un navegador no puede abrir un socket TCP crudo como hacen `cliente_test.py`, `monitor.py` o `validador.py`, así que se agregó un pequeño **puente WebSocket↔TCP** (`bridge.py`) que actúa como un cliente más del chat: por cada pestaña/usuario del navegador abre una conexión TCP independiente hacia `servidor.py` y reenvía los mensajes JSON en ambas direcciones sin interpretarlos (pura capa de transporte, igual de "tonta" que `servidor.py`).
+
+El frontend (`frontend/`, React + Vite) es un dashboard que muestra el chat (público/privado), la lista de nodos conectados y una visualización en vivo de la ronda de consenso (bloque propuesto, votos recibidos, bloque confirmado/rechazado), todo alimentado por datos **reales** del backend, no simulados.
+
+## Archivos Entregables
+
+| Archivo | Descripción |
+|---|---|
+| `bridge.py` | Puente WebSocket↔TCP (única pieza nueva en el backend) |
+| `frontend/` | Dashboard React (Vite) |
+| `frontend/src/hooks/useChatSocket.js` | Traduce el protocolo JSON del chat a estado de React |
+
+## Dependencia adicional
+
+El puente usa la librería `websockets` (no es parte de la simulación de consenso, que sigue siendo 100% librería estándar):
+```bash
+pip install websockets
+```
+
+## Mapeo de conceptos (protocolo real → dashboard)
+
+El dashboard fue diseñado originalmente para un modelo genérico "líder propone, nodos aceptan" con fases. Se mapeó así contra nuestro protocolo real:
+
+| Concepto del dashboard | Origen real |
+|---|---|
+| Líder | Siempre `Monitor` (es el orquestador fijo del proyecto) |
+| Fase `PROPOSING` / `ACCEPTING` / `COMMITTED` / `REJECTED` | Derivada de los broadcasts `BLOQUE_PROPUESTO#<id>#<hash>`, `BLOQUE_OK#<id>` / `BLOQUE_INVALIDO#<id>`, `CONSENSO_ALCANZADO#<id>`, `BLOQUE_RECHAZADO#<id>` |
+| Bloques en el rail | Se agregan al ver `BLOQUE_PROPUESTO`, cambian de estado al ver `CONSENSO_ALCANZADO`/`BLOQUE_RECHAZADO` |
+| Nodos conectados | Polling automático de `/list` cada 4s (el protocolo no empuja altas/bajas de clientes) |
+| Votos por nodo | Conteo de broadcasts `BLOQUE_OK`/`BLOQUE_INVALIDO` observados por nodo |
+
+Para que el navegador (que solo ve mensajes públicos) pueda mostrar esto, `monitor.py` agrega **dos anuncios públicos adicionales** (además de la lógica privada ya existente): `BLOQUE_PROPUESTO#<id>#<hash>` al distribuir, y `CONSENSO_ALCANZADO#<id>` / `BLOQUE_RECHAZADO#<id>` al decidir el quórum. Esto no cambia el comportamiento de los validadores (siguen ignorando los broadcasts) ni del servidor.
+
+## Ejecución completa con interfaz
+
+```bash
+# Terminal 1
+python servidor.py
+
+# Terminal 2 (uno por validador)
+python validador.py    # nombre: val1
+python validador.py    # nombre: val2   (en otra terminal)
+
+# Terminal 3: el puente WebSocket<->TCP
+python bridge.py
+
+# Terminal 4: el Monitor
+python monitor.py
+> cargar bloques.txt val1,val2
+
+# Terminal 5: el frontend
+cd frontend
+npm install
+npm run dev
+```
+
+Abre `http://localhost:5173`, elige un nombre de nodo y conéctate. Vuelve a la Terminal 4 y ejecuta `> distribuir 1`: la ronda de consenso completa (propuesta → votos → confirmación) aparece en vivo en el dashboard.
+
+**Notas:**
+- El navegador es un cliente del chat como cualquier otro: puede usar `/broadcast`, `/w <nodo> <mensaje>`, `/list` y `/quit` desde la barra de mensajes.
+- Si el nombre elegido ya está en uso, el servidor responde con error y la pantalla de unión lo muestra para que elijas otro.
+- `bridge.py` escucha en `ws://localhost:8765`; si cambias el puerto de `servidor.py`, actualiza `HOST_TCP`/`PUERTO_TCP` en `bridge.py`.
+
+---
+
 # Testing
 
 ## Test 1: Fase 1 - Servidor y mensajería básica
@@ -544,6 +616,11 @@ print("✓ Encadenamiento y serializacion OK")
 - [x] Ledger local por nodo
 - [x] Inserción diferida hasta confirmación de consenso (`consenso_ok`)
 - [x] Manejo de nodos que votan distinto sin bloquear al resto de la red
+
+## Interfaz Web: ✅ COMPLETADA
+- [x] Puente WebSocket↔TCP (`bridge.py`)
+- [x] Dashboard React conectado a datos reales (chat, nodos, bloques, consenso)
+- [x] Verificado end-to-end con servidor + validadores + monitor + navegador real
 
 ---
 

@@ -82,6 +82,11 @@ class Monitor:
             self.socket.sendall(json.dumps(mensaje).encode() + b'\n')
         print(f"✓ Bloque #{bloque_id} distribuido a {len(self.validadores)} validadores")
 
+        # Anuncio publico (ademas del envio privado): permite que cualquier
+        # observador del chat (ej. la interfaz web) vea que arranco una ronda
+        # de consenso, sin que el servidor necesite saber nada de bloques.
+        self._anunciar(f"BLOQUE_PROPUESTO#{bloque_id}#{bloque.hash[:12]}")
+
         # Resiliencia ante nodos caidos: si algun validador no responde,
         # forzamos la evaluacion del quorum tras el timeout en vez de
         # esperar indefinidamente su voto.
@@ -184,10 +189,17 @@ class Monitor:
             bloque = self.bloques[bloque_id]
             self.blockchain.append(bloque)
             self._mostrar_estado_global()
+            self._anunciar(f"CONSENSO_ALCANZADO#{bloque_id}")
             self._notificar_consenso(bloque_id)
         else:
             print(f"❌ BLOQUE_RECHAZADO: Bloque #{bloque_id} no alcanzo mayoria "
                   f"({estado['ok']}/{estado['total']} votos OK, latencia: {latencia:.2f}s)")
+            self._anunciar(f"BLOQUE_RECHAZADO#{bloque_id}")
+
+    def _anunciar(self, contenido: str) -> None:
+        """Difunde un mensaje publico del Monitor (ej. para que la interfaz lo muestre)."""
+        mensaje = {"cmd": "broadcast", "from": self.nombre, "data": contenido}
+        self.socket.sendall(json.dumps(mensaje).encode() + b'\n')
 
     def _mostrar_estado_global(self) -> None:
         """Imprime el estado global de la blockchain consensuada hasta el momento."""
@@ -210,18 +222,31 @@ class Monitor:
     def menu(self):
         while True:
             cmd = input("\n> ").strip()
-            if cmd.startswith("cargar"):
-                partes = cmd.split()
-                if len(partes) >= 3:
-                    archivo = partes[1]
-                    val_list = partes[2].split(',')
-                    self.cargar_bloques(archivo, val_list)
-            elif cmd.startswith("distribuir"):
-                partes = cmd.split()
-                if len(partes) == 2:
-                    self.distribuir_bloque(int(partes[1]))
-            elif cmd == "salir":
-                break
+            try:
+                if cmd.startswith("cargar"):
+                    partes = cmd.split()
+                    if len(partes) >= 3:
+                        archivo = partes[1]
+                        val_list = partes[2].split(',')
+                        self.cargar_bloques(archivo, val_list)
+                    else:
+                        print("Uso: cargar <archivo.txt> <val1,val2,...>")
+                elif cmd.startswith("distribuir"):
+                    partes = cmd.split()
+                    if len(partes) == 2:
+                        self.distribuir_bloque(int(partes[1]))
+                    else:
+                        print("Uso: distribuir <numero_de_bloque>  (ej: distribuir 1)")
+                elif cmd == "salir":
+                    break
+                elif cmd:
+                    print(f"Comando desconocido: '{cmd}'. Usa: cargar, distribuir o salir.")
+            except ValueError:
+                print("[!] El numero de bloque debe ser un entero (ej: distribuir 1)")
+            except KeyError:
+                print("[!] Ese bloque no existe. Primero usa 'cargar <archivo> <validadores>'.")
+            except FileNotFoundError:
+                print(f"[!] Archivo no encontrado.")
 
 def main():
     monitor = Monitor()

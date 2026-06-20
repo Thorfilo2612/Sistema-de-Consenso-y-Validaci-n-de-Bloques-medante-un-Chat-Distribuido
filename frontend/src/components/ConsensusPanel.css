@@ -1,0 +1,155 @@
+/* ConsensusPanel.css */
+
+.consensus-panel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* ── Header ───────────────────────────────────────────────────── */
+.consensus-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px 8px;
+  border-bottom: 1px solid var(--border-subtle);
+  flex-shrink: 0;
+}
+
+.consensus-title {
+  font-family: var(--font-body);
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-muted);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.consensus-phase {
+  font-family: var(--font-body);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+}
+
+/* ── Body ─────────────────────────────────────────────────────── */
+.consensus-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 0 0 10px;
+  overflow: hidden;
+  min-height: 0;
+}
+
+/* ── Canvas graph: takes available space ─────────────────────── */
+.consensus-graph-wrap {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  position: relative;
+  border-radius: 6px;
+}
+
+.consensus-graph-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+/* ── Stats row ────────────────────────────────────────────────── */
+.consensus-stats {
+  display: flex;
+  align-items: center;
+  padding: 0 14px;
+  flex-shrink: 0;
+}
+
+.consensus-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  padding: 0 12px;
+  flex: 1;
+}
+
+.consensus-stat:first-child { padding-left: 0; }
+.consensus-stat:last-child  { padding-right: 0; }
+
+.stat-divider {
+  width: 1px;
+  height: 22px;
+  background: #2A2A2A;
+  flex-shrink: 0;
+}
+
+.stat-label {
+  font-family: var(--font-body);
+  font-size: 9px;
+  font-weight: 500;
+  color: var(--text-faint);
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
+}
+
+.stat-value {
+  font-family: var(--font-body);
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--text-primary);
+}
+
+.stat-value--round  { color: var(--color-primary); }
+.stat-value--leader { color: var(--text-primary); font-size: 11px; font-weight: 600; }
+.stat-value--block  { color: var(--text-muted);   font-size: 11px; font-family: var(--font-mono); }
+
+/* ── Vote bar ─────────────────────────────────────────────────── */
+.vote-bar-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 14px;
+  flex-shrink: 0;
+}
+
+.vote-bar {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex: 1;
+}
+
+.vote-seg {
+  flex: 1;
+  height: 6px;
+  background: #1E1E1E;
+  border: 1px solid #2A2A2A;
+  border-radius: 2px;
+  transition: background var(--dur-normal) var(--ease-out),
+              border-color var(--dur-normal) var(--ease-out);
+}
+
+.vote-seg--filled {
+  background: var(--color-primary);
+  border-color: rgba(0, 200, 150, 0.5);
+}
+
+.vote-fraction {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--color-primary);
+  flex-shrink: 0;
+}
+
+.vote-fraction-denom {
+  color: var(--text-faint);
+  font-weight: 400;
+}

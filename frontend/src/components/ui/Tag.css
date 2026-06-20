@@ -1,0 +1,41 @@
+/* Tag.css — inline badges for message type classification */
+
+.tag {
+  display: inline-flex;
+  align-items: center;
+  font-family: var(--font-body);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  padding: 1px 5px 1px 4px;
+  border-radius: var(--radius-sm);
+  border: 1px solid transparent;
+  line-height: 1.4;
+  flex-shrink: 0;
+  user-select: none;
+  white-space: nowrap;
+}
+
+.tag--private {
+  color: var(--color-secondary);
+  background: var(--color-secondary-tint);
+  border-color: rgba(139,132,184,0.18);
+}
+
+.tag--system {
+  color: var(--color-amber);
+  background: var(--color-amber-tint);
+  border-color: rgba(255, 183, 3, 0.3);
+}
+
+.tag--broadcast {
+  color: var(--color-primary);
+  background: var(--color-primary-tint);
+  border-color: rgba(74,108,247,0.20);
+}
+
+.tag--accent {
+  color: var(--color-accent);
+  background: var(--color-accent-tint);
+  border-color: rgba(6, 255, 165, 0.3);
+}

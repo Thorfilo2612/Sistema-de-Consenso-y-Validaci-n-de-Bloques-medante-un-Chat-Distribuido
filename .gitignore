@@ -1,3 +1,7 @@
 __pycache__/
 *.pyc
 servidor.log
+
+# Frontend (React/Vite)
+frontend/node_modules/
+frontend/dist/

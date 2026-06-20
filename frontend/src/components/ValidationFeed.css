@@ -1,0 +1,124 @@
+/* ValidationFeed.css */
+
+.validation-feed {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* ── Header ───────────────────────────────────────────────────── */
+.feed-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px 8px;
+  border-bottom: 1px solid var(--border-subtle);
+  flex-shrink: 0;
+}
+
+.feed-title {
+  font-family: var(--font-body);
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-muted);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.feed-count {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--color-primary);
+}
+
+/* ── Scroll area ──────────────────────────────────────────────── */
+.feed-scroll {
+  flex: 1;
+  overflow-y: auto;
+  padding: 4px 0;
+  scrollbar-width: thin;
+  scrollbar-color: var(--gray-400) transparent;
+  display: flex;
+  flex-direction: column;
+}
+
+.feed-scroll::-webkit-scrollbar { width: 3px; }
+.feed-scroll::-webkit-scrollbar-thumb { background: var(--gray-400); border-radius: 2px; }
+
+/* ── Feed entry ───────────────────────────────────────────────── */
+.feed-entry {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 8px 12px;
+  border-left: 2px solid transparent;
+  transition: background var(--dur-fast) var(--ease-out);
+}
+
+.feed-entry:hover {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+/* ── Per-type left borders ────────────────────────────────────── */
+.entry--propose   { border-left-color: var(--color-amber); }
+.entry--accept    { border-left-color: var(--color-primary); }
+.entry--commit    { border-left-color: var(--color-primary); }
+.entry--committed { border-left-color: var(--color-primary); background: rgba(0, 200, 150, 0.03); }
+.entry--reject    { border-left-color: var(--color-secondary); }
+.entry--broadcast { border-left-color: var(--text-faint); }
+.entry--private   { border-left-color: var(--color-amber); background: rgba(245, 166, 35, 0.03); }
+.entry--system    { opacity: 0.55; }
+
+/* ── First row: time + type prefix ───────────────────────────── */
+.entry-meta {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.entry-time {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--text-faint);
+  white-space: nowrap;
+  font-feature-settings: "tnum";
+  flex-shrink: 0;
+}
+
+/* Pill-style type badge */
+.entry-prefix {
+  font-family: var(--font-body);
+  font-size: 9px;
+  font-weight: 700;
+  white-space: nowrap;
+  flex-shrink: 0;
+  letter-spacing: 0.06em;
+  padding: 1px 6px;
+  border-radius: 3px;
+}
+
+.entry--propose   .entry-prefix { background: rgba(245, 166, 35, 0.12); }
+.entry--accept    .entry-prefix { background: rgba(0, 200, 150, 0.12); }
+.entry--commit    .entry-prefix { background: rgba(0, 200, 150, 0.12); }
+.entry--committed .entry-prefix { background: rgba(0, 200, 150, 0.12); }
+.entry--reject    .entry-prefix { background: rgba(224, 82, 82, 0.12); }
+.entry--broadcast .entry-prefix { background: rgba(255, 255, 255, 0.05); }
+.entry--private   .entry-prefix { background: rgba(245, 166, 35, 0.10); }
+.entry--system    .entry-prefix { background: transparent; }
+
+/* ── Message text ─────────────────────────────────────────────── */
+.entry-text {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-muted);
+  line-height: 1.45;
+  word-break: break-word;
+  overflow-wrap: anywhere;
+}
+
+.entry--accept    .entry-text,
+.entry--commit    .entry-text,
+.entry--committed .entry-text { color: var(--text-secondary); }
+.entry--reject    .entry-text { color: var(--text-muted); }
+.entry--propose   .entry-text { color: var(--text-secondary); }

@@ -1,0 +1,196 @@
+/* UsersPanel.css — node list, staggered entrance, TASTE motion 7/10 */
+
+.users-panel {
+  width: var(--users-width);
+  min-width: var(--users-width);
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-component);
+  border-right: 1px solid var(--border-subtle);
+  overflow: hidden;
+  transition:
+    width var(--dur-normal) var(--ease-out),
+    min-width var(--dur-normal) var(--ease-out),
+    opacity var(--dur-fast) var(--ease-out);
+}
+
+.users-panel:not(.users-panel--open) {
+  width: 0;
+  min-width: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* ── Panel header ────────────────────────────────────────────── */
+.panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-2) var(--space-3);
+  border-bottom: 1px solid var(--border-subtle);
+  flex-shrink: 0;
+}
+
+.panel-title {
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: var(--text-primary);
+  text-transform: uppercase;
+}
+
+.panel-count {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--color-primary);
+  background: var(--color-primary-tint);
+  padding: 1px 6px;
+  border-radius: var(--radius-sm);
+  border: 1px solid rgba(74,108,247,0.14);
+  font-feature-settings: "tnum";
+  white-space: nowrap;
+}
+
+/* ── User list ───────────────────────────────────────────────── */
+.user-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--space-2) 0;
+}
+
+/* ── User row ────────────────────────────────────────────────── */
+.user-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 10px var(--space-3);
+  margin: 2px 8px;
+  cursor: default;
+  opacity: 0;
+  animation-fill-mode: forwards;
+  transition: background var(--dur-fast) var(--ease-out), box-shadow var(--dur-fast) var(--ease-out);
+  border-radius: var(--radius-sm);
+  position: relative;
+}
+
+.user-row:hover {
+  background: #2A2A40;
+  box-shadow: none;
+}
+
+.user-row:hover .user-joined {
+  opacity: 1;
+}
+
+/* Own node — accent tint */
+.user-row--own {
+  background: var(--color-accent-tint);
+}
+.user-row--own:hover {
+  background: rgba(6, 255, 165, 0.07);
+}
+
+/* ── Status dot ──────────────────────────────────────────────── */
+.user-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.dot--connected {
+  background: var(--color-accent);
+  animation: dotPingGreen 2.8s ease-in-out infinite;
+}
+
+.dot--idle {
+  background: var(--color-amber);
+}
+
+.dot--disconnected {
+  background: var(--gray-500);
+}
+
+/* ── User info ───────────────────────────────────────────────── */
+.user-info {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.user-name {
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  line-height: 1.3;
+}
+
+.own-badge {
+  font-size: 9px;
+  font-weight: 400;
+  color: var(--color-accent);
+  font-family: var(--font-mono);
+  letter-spacing: 0.04em;
+  opacity: 0.85;
+}
+
+.user-joined {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--text-faint);
+  letter-spacing: 0.03em;
+  font-feature-settings: "tnum";
+  opacity: 0.7;
+  transition: opacity var(--dur-fast) var(--ease-out);
+  line-height: 1.2;
+}
+
+/* ── Panel footer ────────────────────────────────────────────── */
+.panel-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-2) var(--space-3);
+  border-top: 1px solid var(--border-subtle);
+  flex-shrink: 0;
+}
+
+.panel-footer-label {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  color: var(--text-faint);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.panel-footer-signal {
+  font-family: var(--font-mono);
+  font-size: 8px;
+  color: var(--color-primary);
+  letter-spacing: 2px;
+  opacity: 0.6;
+}
+
+/* ── Mobile overlay ──────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .users-panel.users-panel--open {
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    z-index: var(--z-dropdown);
+    box-shadow: var(--shadow-lg);
+    width: var(--users-width);
+    min-width: var(--users-width);
+  }
+}
